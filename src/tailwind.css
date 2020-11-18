@@ -1,0 +1,11 @@
+@import 'tailwindcss/base';
+@import 'tailwincss/components';
+@import 'tailwindcss/utilities';
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  position: relative;
+}
