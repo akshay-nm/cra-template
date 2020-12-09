@@ -24,7 +24,17 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "pretty": "prettier --write ./src",
+    "lint": "eslint src --ext .js",
+    "lint:fix": "npm run lint -- --fix",
     "eject": "react-scripts eject"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx}": ["eslint", "pretty-quick — staged", "git add"]
   },
   "prettier": {
     "semi": false,
@@ -49,9 +59,18 @@
   },
   "devDependencies": {
     "autoprefixer": "^9.8.6",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.15.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-react": "^7.21.5",
+    "husky": "^4.3.5",
+    "lint-staged": "^10.5.3",
     "postcss": "^8.0.0",
     "postcss-cli": "^8.3.0",
-    "prettier": "^2.1.2",
+    "prettier": "^2.2.1",
+    "pretty-quick": "^3.1.0",
     "tailwindcss": "^1.9.6"
   }
 }
