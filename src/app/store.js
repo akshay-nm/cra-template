@@ -1,8 +1,18 @@
-import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../features/counter/counterSlice';
+import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit'
+import logger from 'redux-logger'
 
-export default configureStore({
+import sessionReducer from './sessionSlice'
+import miscReducer from './miscSlice'
+import userReducer from './userSlice'
+
+const storeParams = {
   reducer: {
-    counter: counterReducer,
+    session: sessionReducer,
+    misc: miscReducer,
+    user: userReducer,
   },
-});
+}
+if (process.env.NODE_ENV !== 'production')
+  storeParams.middleware = [...getDefaultMiddleware(), logger]
+
+export default configureStore(storeParams)
