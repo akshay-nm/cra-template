@@ -1,3 +1,18 @@
+# cra-template
+
+## Highlights
+
+- cra
+- redux
+- jwt based session management
+- simple api-adapter (more modifications and optimisations possible, I know...)
+- environment variables
+  - REACT_APP_NAME
+  - REACT_APP_API_SERVER_HOST
+- eslint, prettier with pre-commit hook
+
+# Default CRA docs
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
 
 ## Available Scripts
