@@ -1,30 +1,37 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { useDispatch } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
-import { logout } from '../app/sessionSlice'
 
-export default function ProtectedContainer({ children }) {
-  const dispatch = useDispatch()
+export default function Container({ children }) {
   const history = useHistory()
   const location = useLocation()
 
-  const onLogoutClick = () => dispatch(logout())
+  const onLoginClick = () => {
+    if (location.pathname !== '/login') history.push('/login')
+    else history.replace('/login')
+  }
+  const onRegisterClick = () => {
+    if (location.pathname !== '/register') history.push('/register')
+    else history.replace('/register')
+  }
   const onHomeClick = () => {
     if (location.pathname !== '/') history.push('/')
     else history.replace('/')
   }
   return (
     <div className="w-full h-full relative flex flex-col">
-      <div className="flex w-full border">
-        <div className="flex-grow p-4">
+      <div className="flex w-full p-4 border">
+        <div className="flex-grow">
           <button type="button" className="px-2 py-1" onClick={onHomeClick}>
             {process.env.REACT_APP_NAME}
           </button>
         </div>
         <div className="flex items-center">
-          <button type="button" className="px-2 py-1 border rounded" onClick={onLogoutClick}>
-            Logout
+          <button type="button" className="px-2 py-1 border rounded mr-2" onClick={onRegisterClick}>
+            Register
+          </button>
+          <button type="button" className="px-2 py-1 border rounded" onClick={onLoginClick}>
+            Login
           </button>
         </div>
       </div>
@@ -32,6 +39,6 @@ export default function ProtectedContainer({ children }) {
     </div>
   )
 }
-ProtectedContainer.propTypes = {
+Container.propTypes = {
   children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
 }

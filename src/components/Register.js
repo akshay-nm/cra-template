@@ -131,60 +131,62 @@ const Register = () => {
   }, [showError])
 
   return (
-    <div>
+    <div className="p-4">
       <div>Sign up</div>
-      <div>
-        <div className="grid grid-cols-2">
-          <div className="flex flex-col items-center justify-center w-full h-full">
+      <div className="mb-2">
+        <div className="flex">
+          <div className="mr-2">
             <div>First name</div>
             <input
               type="text"
-              className="px-2py-1 border"
+              className="px-2 py-1 border"
               onChange={(event) => onFirstnameChange(event.target.value)}
               value={firstname.value}
             />
           </div>
-          <div className="flex flex-col items-center justify-center w-full h-full">
+          <div>
             <div>Last name</div>
             <input
               type="text"
-              className="px-2py-1 border"
+              className="px-2 py-1 border"
               onChange={(event) => onLastnameChange(event.target.value)}
               value={lastname.value}
             />
           </div>
         </div>
-        <div>
-          <div className="flex flex-col items-center justify-center w-full h-full">
+        <div className="mb-2">
+          <div>
             <div>Email</div>
             <input
               type="text"
-              className="px-2py-1 border"
+              className="px-2 py-1 border"
               onChange={(event) => onEmailChange(event.target.value)}
               value={email.value}
             />
           </div>
         </div>
-        <div>
-          <div className="flex flex-col items-center justify-center w-full h-full">
+        <div className="mb-2">
+          <div>
             <div>Password</div>
             <input
               type="password"
-              className="px-2py-1 border"
+              className="px-2 py-1 border"
               onChange={(event) => onPasswordChange(event.target.value)}
               value={password.value}
             />
           </div>
         </div>
       </div>
-      <button
-        type="button"
-        className="px-2 py-1 border rounded"
-        onClick={() => setFormSubmitted(true)}
-      >
-        Sign Up
-      </button>
-      <div container justify="flex-end">
+      <div className="mb-2">
+        <button
+          type="button"
+          className="px-2 py-1 border rounded"
+          onClick={() => setFormSubmitted(true)}
+        >
+          Sign Up
+        </button>
+      </div>
+      <div className="mb-2">
         <div>
           <Link to="/Login" variant="body2">
             Already have an account? Sign in
