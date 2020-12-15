@@ -25,23 +25,28 @@ const sessionSlice = createSlice({
 
 export const { updateAccessToken, updateRefreshToken, updateIsLoggedIn } = sessionSlice.actions
 
-export const login = ({ accessToken, refreshToken }) => (dispatch) => {
+export const login = ({ accessToken, refreshToken }, callback = () => {}) => (dispatch) => {
   dispatch(updateAccessToken(accessToken))
   dispatch(updateRefreshToken(refreshToken))
   dispatch(updateUserId(jwtDecode(accessToken).id))
   dispatch(updateIsLoggedIn(true))
+  callback()
 }
 
-export const logout = () => (dispatch) => {
+export const logout = (callback) => (dispatch) => {
   dispatch(updateRefreshToken(null))
   dispatch(updateAccessToken(null))
   dispatch(updateUserId(null))
   dispatch(updateIsLoggedIn(false))
+  callback()
 }
 
-export const refreshSession = ({ accessToken, refreshToken }) => (dispatch) => {
+export const refreshSession = ({ accessToken, refreshToken }, callback = () => {}) => (
+  dispatch
+) => {
   dispatch(updateAccessToken(accessToken))
   dispatch(updateRefreshToken(refreshToken))
+  callback()
 }
 
 export default sessionSlice.reducer
