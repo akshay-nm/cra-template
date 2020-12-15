@@ -39,4 +39,9 @@ export const logout = () => (dispatch) => {
   dispatch(updateIsLoggedIn(false))
 }
 
+export const refreshSession = ({ accessToken, refreshToken }) => (dispatch) => {
+  dispatch(updateAccessToken(accessToken))
+  dispatch(updateRefreshToken(refreshToken))
+}
+
 export default sessionSlice.reducer
