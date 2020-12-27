@@ -18,6 +18,15 @@
     "redux-logger": "^3.0.6",
     "rxjs": "^6.6.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akshay-nm/cra-template.git"
+  },
+  "author": "Akshay Kumar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/akshay-nm/cra-template/issues"
+  },
   "scripts": {
     "build:styles": "postcss ./src/tailwind.css -o ./src/index.css",
     "prestart": "npm run build:styles",
