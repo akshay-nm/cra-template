@@ -1,52 +1,90 @@
-import jwtDecode from 'jwt-decode'
+/**
+ * SessionSlice (Redux)
+ * Description: Store session related information
+ * Original Author: Akshay Kumar <akshay.nm92@gmail.com>
+ */
 
 import { createSlice } from '@reduxjs/toolkit'
-import { updateUserId } from './userSlice'
+import jwtDecode from 'jwt-decode'
 
-const sessionSlice = createSlice({
+const initialState = {
+  isValid: false,
+  accessToken: null,
+  refreshToken: null,
+  user: null,
+  isBeingRefreshed: false,
+  beganFrom: null,
+  expiresOn: null,
+}
+
+const slice = createSlice({
   name: 'session',
-  initialState: {
-    accessToken: null,
-    refreshToken: null,
-    isLoggedIn: false,
-  },
+  initialState,
   reducers: {
+    updateSessionIsValid: (state, action) => {
+      state.isValid = action.payload
+    },
     updateAccessToken: (state, action) => {
       state.accessToken = action.payload
     },
     updateRefreshToken: (state, action) => {
       state.refreshToken = action.payload
     },
-    updateIsLoggedIn: (state, action) => {
-      state.isLoggedIn = action.payload
+    updateUser: (state, action) => {
+      state.user = action.payload
+    },
+    updateSessionIsBeingRefreshed: (state, action) => {
+      state.sessionIsBeingRefreshed = action.payload
+    },
+    updateSessionBeganFrom: (state, action) => {
+      state.beganFrom = action.payload
+    },
+    updateSessionExpiresOn: (state, action) => {
+      state.expiresOn = action.payload
     },
   },
 })
 
-export const { updateAccessToken, updateRefreshToken, updateIsLoggedIn } = sessionSlice.actions
+export const {
+  updateSessionIsValid,
+  updateAccessToken,
+  updateRefreshToken,
+  updateUser,
+  updateSessionIsBeingRefreshed,
+  updateSessionBeganFrom,
+  updateSessionExpiresOn,
+} = slice.actions
 
-export const login = ({ accessToken, refreshToken }, callback = () => {}) => (dispatch) => {
+export const logUserIn = ({ accessToken, refreshToken }, from = 'login', history) => (dispatch) => {
+  const { name, id, email, type, exp } = jwtDecode(accessToken)
+  dispatch(updateSessionIsBeingRefreshed(true))
   dispatch(updateAccessToken(accessToken))
   dispatch(updateRefreshToken(refreshToken))
-  dispatch(updateUserId(jwtDecode(accessToken).id))
-  dispatch(updateIsLoggedIn(true))
-  callback()
+  dispatch(updateUser({ id, name, email, type }))
+  dispatch(updateSessionIsValid(true))
+  dispatch(updateSessionBeganFrom(from))
+  dispatch(updateSessionExpiresOn(exp))
+  dispatch(updateSessionIsBeingRefreshed(false))
+  history.replace('/loading-on-session-create')
 }
 
-export const logout = (callback) => (dispatch) => {
-  dispatch(updateRefreshToken(null))
-  dispatch(updateAccessToken(null))
-  dispatch(updateUserId(null))
-  dispatch(updateIsLoggedIn(false))
-  callback()
+export const logUserOut = () => (dispatch) => {
+  dispatch(updateAccessToken(initialState.accessToken))
+  dispatch(updateRefreshToken(initialState.refreshToken))
+  dispatch(updateUser(initialState.user))
+  dispatch(updateSessionIsValid(initialState.isValid))
+  dispatch(updateSessionIsBeingRefreshed(initialState.sessionIsBeingRefreshed))
+  dispatch(updateSessionBeganFrom(initialState.beganFrom))
+  dispatch(updateSessionExpiresOn(initialState.expiresOn))
 }
 
-export const refreshSession = ({ accessToken, refreshToken }, callback = () => {}) => (
-  dispatch
-) => {
+export const refreshSession = ({ accessToken, refreshToken }) => (dispatch) => {
+  const { name, id, email, type, exp } = jwtDecode(accessToken)
   dispatch(updateAccessToken(accessToken))
   dispatch(updateRefreshToken(refreshToken))
-  callback()
+  dispatch(updateUser({ id, name, email, type }))
+  dispatch(updateSessionExpiresOn(exp))
+  dispatch(updateSessionIsBeingRefreshed(false))
 }
 
-export default sessionSlice.reducer
+export default slice.reducer

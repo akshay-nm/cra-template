@@ -1,201 +1,183 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import useFormState from '@akshay-nm/use-form-state'
+import axios from 'axios'
+import React, { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import api from '../api-adapter'
-import { handleResponse, handleError, logger } from '../utils'
-import { login } from '../app/sessionSlice'
-import AlertMessage from './AlertMessage'
+import { Link } from 'react-router-dom'
+import { addErrorNotification, addSimpleNotification, addWarningNotification } from '../app/notificationsSlice'
+import { logUserIn } from '../app/sessionSlice'
+import { logger } from '../utils'
 
 const Register = () => {
+  const {
+    isValid,
+    isValidating,
+    resetForm,
+    name,
+    showNameWarning,
+    onNameChange,
+    mobile,
+    showMobileWarning,
+    onMobileChange,
+    email,
+    showEmailWarning,
+    onEmailChange,
+    password,
+    showPasswordWarning,
+    onPasswordChange,
+    confirmPassword,
+    showConfirmPasswordWarning,
+    onConfirmPasswordChange,
+  } = useFormState({
+    states: [
+      {
+        name: 'name',
+        default: '',
+        defaultIsValid: false,
+        mustBeValid: true,
+        validator: () => true,
+      },
+      {
+        name: 'mobile',
+        default: '',
+        defaultIsValid: false,
+        mustBeValid: true,
+        validator: () => true,
+      },
+      {
+        name: 'email',
+        default: '',
+        defaultIsValid: false,
+        mustBeValid: true,
+        validator: () => true,
+      },
+      {
+        name: 'password',
+        default: '',
+        defaultIsValid: false,
+        mustBeValid: true,
+        validator: () => true,
+      },
+      {
+        name: 'confirmPassword',
+        default: '',
+        defaultIsValid: false,
+        mustBeValid: true,
+        validator: () => true,
+      },
+    ],
+  })
+  const [isLocked, setIsLocked] = useState(false)
   const dispatch = useDispatch()
 
-  const [firstname, setFirstname] = useState({
-    value: '',
-    isValid: false,
-    needsValidation: false,
-    isUntouched: true,
-  })
-  const [lastname, setLastname] = useState({
-    value: '',
-    isValid: false,
-    needsValidation: false,
-    isUntouched: true,
-  })
-  const [email, setEmail] = useState({
-    value: '',
-    isValid: false,
-    needsValidation: false,
-    isUntouched: true,
-  })
-  const [password, setPassword] = useState({
-    value: '',
-    isValid: false,
-    needsValidation: false,
-    isUntouched: true,
-  })
-
-  const [isFormValid, setIsFormValid] = useState(false)
-  const [formSubmitted, setFormSubmitted] = useState(false)
-  const [showError, setShowError] = useState(false)
-
-  const onChange = (value) => (prev) => ({
-    ...prev,
-    value,
-    needsValidation: true,
-    isUntouched: false,
-  })
-
-  const onFirstnameChange = (value) => setFirstname(onChange(value))
-  const onLastnameChange = (value) => setLastname(onChange(value))
-  const onEmailChange = (value) => setEmail(onChange(value))
-  const onPasswordChange = (value) => setPassword(onChange(value))
-
-  useEffect(() => {
-    if (firstname.needsValidation)
-      setFirstname((prev) => ({
-        ...prev,
-        isValid: prev.value.length > 0,
-        needsValidation: false,
-      }))
-  }, [firstname])
-
-  useEffect(() => {
-    if (lastname.needsValidation)
-      setLastname((prev) => ({
-        ...prev,
-        isValid: prev.value.length > 0,
-        needsValidation: false,
-      }))
-  }, [lastname])
-
-  useEffect(() => {
-    if (email.needsValidation)
-      setEmail((prev) => ({
-        ...prev,
-        isValid: prev.value.length > 0,
-        needsValidation: false,
-      }))
-  }, [email])
-
-  useEffect(() => {
-    if (password.needsValidation)
-      setPassword((prev) => ({
-        ...prev,
-        isValid: prev.value.length > 0,
-        needsValidation: false,
-      }))
-  }, [password])
-
-  useEffect(() => {
-    setIsFormValid(
-      firstname.isValid &&
-        !firstname.needsValidation &&
-        lastname.isValid &&
-        !lastname.needsValidation &&
-        email.isValid &&
-        !email.needsValidation &&
-        password.isValid &&
-        !password.needsValidation
-    )
-    setShowError(false)
-  }, [firstname, lastname, email, password])
-
-  useEffect(() => {
-    if (formSubmitted) {
-      if (isFormValid) {
-        api()
-          .users.createNew({
-            name: `${firstname.value} ${lastname.value}`,
-            email: email.value,
-            password: password.value,
-          })
-          .send()
-          .then(handleResponse)
-          .then((res) => dispatch(login(res)))
-          .catch((error) => {
-            logger('Error while trying to login')
-            if (error.message === '400') setShowError(true)
-            handleError(error, dispatch)
-          })
-      }
-      setFormSubmitted(false)
-    }
-  }, [formSubmitted, isFormValid, firstname, lastname, email, password, dispatch])
-
-  useEffect(() => {
-    if (showError) {
-      const timeout = setTimeout(() => setShowError(false), 3000)
-      return () => clearTimeout(timeout)
-    }
-    return null
-  }, [showError])
+  const register = useCallback(() => {
+    if (isLocked) dispatch(addSimpleNotification('Please wait'))
+    else if (isValid) {
+      setIsLocked(true)
+      axios
+        .post(`${process.env.REACT_APP_API_SERVER_URL}/users`, { name, mobile, email, password })
+        .then((res) => res.data)
+        .then((res) => dispatch(logUserIn(res)))
+        .catch((error) => {
+          if (error.response.status === 400) dispatch(addErrorNotification('Please fill the form correctly'))
+          if (error.response.status === 403)
+            dispatch(addErrorNotification('User account already exists, try logging in instead'))
+          // eslint-disable-next-line no-console
+          else logger('unhandled error: register: ', error)
+        })
+    } else dispatch(addWarningNotification('Please fill the form correctly'))
+  }, [email, password, mobile, name, dispatch, isLocked, isValid])
 
   return (
-    <div className="p-4">
-      <div>Sign up</div>
-      <div className="mb-2">
-        <div className="flex">
-          <div className="mr-2">
-            <div>First name</div>
-            <input
-              type="text"
-              className="px-2 py-1 border"
-              onChange={(event) => onFirstnameChange(event.target.value)}
-              value={firstname.value}
-            />
-          </div>
+    <div className="">
+      <div className=" p-24">
+        <div className="text-lg font-bold mb-2">Sign up</div>
+        <div className="mb-2">
+          <div>Name</div>
           <div>
-            <div>Last name</div>
             <input
-              type="text"
-              className="px-2 py-1 border"
-              onChange={(event) => onLastnameChange(event.target.value)}
-              value={lastname.value}
+              className={`px-2 py-1 border rounded focus:bg-gray-300 ${isLocked ? 'bg-gray-400 text-gray-700' : ''} ${
+                showNameWarning ? 'border-red-400' : ''
+              }`}
+              value={name}
+              onChange={(event) => onNameChange(event.target.value)}
+              disabled={isLocked}
             />
           </div>
+          {showEmailWarning && <div className="text-xs text-red-400">Please enter a your name.</div>}
         </div>
         <div className="mb-2">
+          <div>Mobile</div>
           <div>
-            <div>Email</div>
             <input
-              type="text"
-              className="px-2 py-1 border"
+              className={`px-2 py-1 border rounded focus:bg-gray-300 ${isLocked ? 'bg-gray-400 text-gray-700' : ''} ${
+                showMobileWarning ? 'border-red-400' : ''
+              }`}
+              value={mobile}
+              onChange={(event) => onMobileChange(event.target.value)}
+              disabled={isLocked}
+            />
+          </div>
+          {showEmailWarning && <div className="text-xs text-red-400">Please enter a valid mobile number.</div>}
+        </div>
+        <div className="mb-2">
+          <div>Email</div>
+          <div>
+            <input
+              className={`px-2 py-1 border rounded focus:bg-gray-300 ${isLocked ? 'bg-gray-400 text-gray-700' : ''} ${
+                showEmailWarning ? 'border-red-400' : ''
+              }`}
+              value={email}
               onChange={(event) => onEmailChange(event.target.value)}
-              value={email.value}
+              disabled={isLocked}
             />
           </div>
+          {showEmailWarning && <div className="text-xs text-red-400">Please enter a valid email address.</div>}
         </div>
         <div className="mb-2">
+          <div>Password</div>
           <div>
-            <div>Password</div>
             <input
-              type="password"
-              className="px-2 py-1 border"
+              className={`px-2 py-1 border rounded focus:bg-gray-300 ${isLocked ? 'bg-gray-400 text-gray-700' : ''} ${
+                showPasswordWarning ? 'border-red-400' : ''
+              }`}
+              value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
-              value={password.value}
+              disabled={isLocked}
+              type="password"
             />
           </div>
+          {showPasswordWarning && <div className="text-xs text-red-400">Please enter a password.</div>}
         </div>
-      </div>
-      <div className="mb-2">
-        <button
-          type="button"
-          className="px-2 py-1 border rounded"
-          onClick={() => setFormSubmitted(true)}
-        >
-          Sign Up
-        </button>
-      </div>
-      <div className="mb-2">
+        <div className="mb-2">
+          <div>Confirm Password</div>
+          <div>
+            <input
+              className={`px-2 py-1 border rounded focus:bg-gray-300 ${isLocked ? 'bg-gray-400 text-gray-700' : ''} ${
+                showConfirmPasswordWarning ? 'border-red-400' : ''
+              }`}
+              value={confirmPassword}
+              onChange={(event) => onConfirmPasswordChange(event.target.value)}
+              disabled={isLocked}
+              type="password"
+            />
+          </div>
+          {showPasswordWarning && <div className="text-xs text-red-400">Passwords do not match</div>}
+        </div>
+
+        <div className="mb-2">
+          <button className="button" onClick={register} disabled={isLocked || isValidating}>
+            Sign up
+          </button>
+          <button className="button" onClick={resetForm} disabled={isLocked || isValidating}>
+            Clear
+          </button>
+        </div>
         <div>
-          <Link to="/Login" variant="body2">
-            Already have an account? Sign in
+          <Link to="/login">
+            <span className="underline text-sm">Already have an account? Login instead</span>
           </Link>
         </div>
       </div>
-      <AlertMessage open={showError} severity="error">
-        Please crosscheck the values in the form
-      </AlertMessage>
     </div>
   )
 }
